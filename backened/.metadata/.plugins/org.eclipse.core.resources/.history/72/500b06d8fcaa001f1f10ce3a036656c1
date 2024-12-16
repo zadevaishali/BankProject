@@ -1,0 +1,57 @@
+package com.servicesImpl;
+
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.models.Account;
+import com.repositories.AccountRepository;
+import com.services.AccountService;
+
+@Service
+public class AccountServiceImpl implements AccountService{
+	
+	@Autowired
+	public AccountRepository accountRepository;
+
+	@Override
+	public Account createAccount(Account newAccount) {
+		
+		return accountRepository.save(newAccount);
+	}
+
+	@Override
+	public Optional<Account> getAccount(Long accountNo) {
+		
+		return accountRepository.findById(accountNo);
+	}
+
+	@Override
+	public Account deposit(Long accountNo, double amount) {
+		Account account=getAccount(accountNo).orElseThrow(()->new RuntimeException("Account Not Found"));
+		account.setBalance(account.getBalance()+amount);
+		return accountRepository.save(account);
+	}
+
+	@Override
+	public Account withdraw(Long accountNo, double amount) {
+		Account account=getAccount(accountNo).orElseThrow(()->new RuntimeException("Account Not Found"));
+		if(account.getBalance() < amount)
+		{
+			throw new RuntimeException("Plz check your balance");
+		}
+		account.setBalance(account.getBalance()-amount);
+				
+		return accountRepository.save(account) ;
+	}
+
+	@Override
+ void deleteAccount(Long accountNo)
+{
+		Account account=getAccount(accountNo).orElseThrow(()->new RuntimeException("Account Not Found"));
+		
+	}
+
+
+}

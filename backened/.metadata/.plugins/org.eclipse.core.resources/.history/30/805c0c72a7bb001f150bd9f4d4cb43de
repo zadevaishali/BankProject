@@ -1,0 +1,16 @@
+package com.services;
+
+
+import org.springframework.stereotype.Service;
+
+import com.exceptions.UserNotFoundException;
+import com.models.User;
+import com.models.UserDetail;
+
+@Service
+public interface ProfileService {
+    public User createUserProfile(UserDetail userDetails, String userId) throws UserNotFoundException;
+
+    public User updateUserProfile(UserDetail userDetails, String userId) throws UserNotFoundException;
+
+}

@@ -1,0 +1,25 @@
+package com.servicesImpl;
+
+import org.springframework.stereotype.Service;
+
+import com.exceptions.UserNotFoundException;
+import com.models.User;
+import com.models.UserDetail;
+import com.services.ProfileService;
+
+@Service
+public class ProfileServiceImpl implements ProfileService{
+
+	@Override
+	public User createUserProfile(UserDetail userDetails, String userId) throws UserNotFoundException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public User updateUserProfile(UserDetail userDetails, String userId) throws UserNotFoundException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+}

@@ -1,0 +1,13 @@
+package com.services;
+
+import java.util.Optional;
+
+import com.models.Account;
+
+public interface AccountService {
+public Account createAccount(Account newAccount);
+public Optional<Account> getAccount(Long accountNo);
+public Account deposit(Long accountNo, double ammount);
+public Account withdraw(Long accountNo,double ammount);
+public Optional<Account> deleteAccount(Long accountNo);
+}
