@@ -15,7 +15,7 @@ public class UserDetail {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private int userdetailsid;
+    private Long userdetailsid;
 
     private String address;
     private String city;
