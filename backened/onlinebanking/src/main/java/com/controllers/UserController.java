@@ -20,13 +20,14 @@ import com.models.UserDetail;
 //import com.services.ProfileService;
 import com.services.SignUpService;
 import com.servicesImpl.ProfileServiceImpl;
+import com.servicesImpl.SignUpServiceImpl;
 
 @RestController
 @RequestMapping("/api")
 public class UserController {
 	
 	@Autowired
-	public SignUpService signUpService;
+	public SignUpServiceImpl signUpServiceImpl;
 	
 	@Autowired
 	public ProfileServiceImpl profileServiceImpl;
@@ -34,17 +35,17 @@ public class UserController {
 	 @GetMapping("/users")
 	    public ResponseEntity<List<User>> allUsers() {
 	        
-	        return ResponseEntity.ok().body(signUpService.getAllUsers());
+	        return ResponseEntity.ok().body(signUpServiceImpl.getAllUsers());
 
 	    }
 
 	    
 	    @GetMapping("/user")
-	    public ResponseEntity<Optional<User>> getUser(@RequestParam Long userid) {
+	    public ResponseEntity<Optional<User>> getUser(@RequestParam String userid) {
 
 	        ResponseEntity<Optional<User>> re = null;
 
-	        Optional<User> theUser = signUpService.getUser(userid);
+	        Optional<User> theUser = signUpServiceImpl.getUser(userid);
 
 	        re = new ResponseEntity<Optional<User>>(theUser, HttpStatus.OK);
 
@@ -53,9 +54,9 @@ public class UserController {
 	    }
 	    
 	    @PutMapping("/createprofile/{userId}")
-	    public ResponseEntity<?> createUserProfile(@RequestBody UserDetail userDetail, @PathVariable Long userId)
+	    public ResponseEntity<?> createUserProfile(@RequestBody UserDetail userDetail, @PathVariable String userId)
 	            throws UserNotFoundException {
-
+	    	System.out.println(userDetail.getAddress());
 	        User theUser = profileServiceImpl.createUserProfile(userDetail, userId);
 
 	        if (theUser != null) {
@@ -67,7 +68,7 @@ public class UserController {
 
 	    
 	    @PutMapping("/updateprofile/{userId}")
-	    public ResponseEntity<?> updateUserProfile(@RequestBody UserDetail userDetail, @PathVariable Long userId)
+	    public ResponseEntity<?> updateUserProfile(@RequestBody UserDetail userDetail, @PathVariable String userId)
 	            throws UserNotFoundException {
 
 	        User theUser = profileServiceImpl.updateUserProfile(userDetail, userId);
