@@ -16,14 +16,17 @@ public class ProfileServiceImpl implements ProfileService{
 	private UserRepository userRepo;
 
 	@Override
-	public User createUserProfile(UserDetail userDetails, Long userId) throws UserNotFoundException {
-		
+	public User createUserProfile(UserDetail userDetails, String userId) throws UserNotFoundException {
+		System.out.println(userDetails.getAddress());
+		System.out.println(userId);
 		 if (userDetails.getAdhaar() == null || userDetails.getPan() == null || userDetails.getMobile() == null) {
 
 	            throw new UserNotFoundException("Provide mandatory fields");
 	        }
 
-	        User theUser = userRepo.findById(userId).get();
+		 User theUser = userRepo.findById(userId)
+                 .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
+
 	        userDetails.setUser(theUser);
 	        theUser.setUserdetails(userDetails);
 	        User savingUpdatedUser = userRepo.save(theUser);
@@ -32,7 +35,7 @@ public class ProfileServiceImpl implements ProfileService{
 	    }
 
 	@Override
-	public User updateUserProfile(UserDetail userDetails, Long userId) throws UserNotFoundException {
+	public User updateUserProfile(UserDetail userDetails, String userId) throws UserNotFoundException {
 		 if (userDetails.getAdhaar() == null || userDetails.getPan() == null || userDetails.getMobile() == null) {
 
 	            throw new UserNotFoundException("Provide mandatory fields");
