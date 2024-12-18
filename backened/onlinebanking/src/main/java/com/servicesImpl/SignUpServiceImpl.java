@@ -41,12 +41,14 @@ public class SignUpServiceImpl implements SignUpService {
 
     }
 
+@Override
+    public Optional<User> getUser(String userId) {
 
-	@Override
-	public Optional<User> getUser(Long userId) {
-		// TODO Auto-generated method stub
-		return Optional.empty();
-	}
+        Optional<User> user = userRepo.findById(userId);
+
+        return user;
+    }
+
 
 
 
