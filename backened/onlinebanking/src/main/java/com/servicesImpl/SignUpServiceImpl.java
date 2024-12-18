@@ -41,14 +41,14 @@ public class SignUpServiceImpl implements SignUpService {
 
     }
 
-@Override
+
+    @Override
     public Optional<User> getUser(String userId) {
 
         Optional<User> user = userRepo.findById(userId);
 
         return user;
     }
-
 
 
 
