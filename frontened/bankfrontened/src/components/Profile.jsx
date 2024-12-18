@@ -5,13 +5,13 @@ import { useNavigate, NavLink } from "react-router-dom";
 import toast from "react-hot-toast";
 
 const Profile = () => {
-  const token = sessionStorage.getItem("jwtToken");
-  axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-
-  //contextAPI
   const { BASE_URL, setUser: setUserDetails, userDetails, gettingAUser } = useBankingSystem();
-  // const [image, setImage] = useState(null);
-  // const [imagePreviewUrl, setImagePreviewUrl] = useState('');
+  const token = localStorage.getItem("jwtToken");
+  console.log("JWT Token:", token);
+  
+ // axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+  //axios.defaults.headers.common['Authorization'] = token ? `Bearer ${token}` : "";
+ 
   const [existedUser, setExistedUser] = useState({
     userId: "",
     firstname: "",
@@ -36,67 +36,49 @@ const Profile = () => {
 
   const navigate = useNavigate();
 
-  useEffect(()=>{
-    if(!sessionStorage.getItem("jwtToken")){
-      navigate("/")
-    }
-  },[])
+  // useEffect(()=>{
+  //   if(!sessionStorage.getItem("jwtToken")){
+  //     navigate("/")
+  //   }
+  // },[])
 
   useEffect(() => {
+    
   setExistedUser(userDetails)
   }, [userDetails])
 
-
-
-  // const handleImageChange = (e) => {
-  //   e.preventDefault();
-  //   let reader = new FileReader();
-  //   let file = e.target.files[0];
-
-  //   reader.onloadend = () => {
-  //     setImage(file)
-  //     setImagePreviewUrl(reader.result);
-  //   }
-
-  //   reader.readAsDataURL(file)
-  // }
-
-
-  let user, uservalue;
-  const handleAlreadyExistedDetails = (ele) => {
-    const fieldsLevel1 = ['userId',
-      'firstname',
-      'lastname',
-      'email'];
-    user = ele.target.name;
-    uservalue = ele.target.value;
-    console.log("+++++ ", user);
-    if (fieldsLevel1.indexOf(user?.trim()) < 0) {
-      let modifiedUser = {
-        ...existedUser,
-        userdetails: {
-          ...existedUser?.userdetails,
-          [user]: uservalue,
-        }
-      };
-      console.log("Modified User: ", modifiedUser);
-      setExistedUser(modifiedUser);
-    } else {
-      let modifiedUser = { ...existedUser, [user]: uservalue };
-      console.log("Modified User 2: ", modifiedUser);
-      setExistedUser(modifiedUser);
-    }
-
-
+  const handleAlreadyExistedDetails = (event) => {
+    const { name, value } = event.target;
+  
+    setExistedUser((prevUser) => {
+      if (['userId', 'firstname', 'lastname', 'email'].includes(name)) {
+        // Update top-level field
+        return { ...prevUser, [name]: value };
+      } else {
+        // Update nested field inside userdetails
+        return {
+          ...prevUser,
+          userdetails: {
+            ...prevUser.userdetails,
+            [name]: value,
+          },
+        };
+      }
+    });
   };
+  
 
-
-    useEffect(()=>{
+      useEffect(()=>{
       
       },[existedUser])
 
   const handleCreateProfile = async (event) => {
     event.preventDefault();
+    if (!existedUser.userId) {
+      toast.error("User ID is missing!");
+      return;
+    }
+    
     console.log("create profile initiated", existedUser);
     
       
@@ -144,8 +126,16 @@ const Profile = () => {
       return;
     }
 
-    const profileResp = await axios.put(`${BASE_URL}/api/updateprofile/${existedUser.userId}`, data);
-
+    //const profileResp = await axios.put(`${BASE_URL}/api/createprofile/${existedUser.userId}`, data);
+    const profileResp = await axios.put(
+      `${BASE_URL}/api/createprofile/${existedUser.userId}`,
+      data,
+      {
+        headers: { Authorization: `Bearer ${token}` }
+      }
+    );
+    
+    
     setUserDetails(profileResp.data.user);
 
     console.log(profileResp);
@@ -167,6 +157,11 @@ const Profile = () => {
 
   const handleUpdateProfile = async (event) => {
     event.preventDefault();
+    if (!existedUser.userId) {
+      toast.error("User ID is missing!");
+      return;
+    }
+    
     console.log("update profile initiated", existedUser);
 
     const { userdetails } = existedUser;
@@ -178,7 +173,7 @@ const Profile = () => {
     console.log("mobile length ",userdetails?.mobile?.length);
 
     const data = {
-      userdetailsid: userdetails?.userdetailsid,
+     
       address: userdetails?.address,
       city: userdetails?.city,
       state: userdetails?.state,
@@ -215,6 +210,7 @@ const Profile = () => {
 
 
     const profileResp = await axios.put(`${BASE_URL}/api/updateprofile/${existedUser.userId}`, data);
+    
 
     setUserDetails(profileResp.data.user);
 
@@ -239,102 +235,233 @@ const Profile = () => {
     toast.success("SignOut Successfull!");
 }
 
+if (!existedUser?.userdetails?.userdetailsid) {
+  return (
+    <>
+      <nav className="navbar navbar-expand-lg navbar-light bg-light px-5 py-3">
+        <h1 className="navbar-brand">This Is Profile Section</h1>
+        <div className="d-flex">
+          <button
+            className="btn btn-outline-dark me-2"
+            onClick={() => {
+              sessionStorage.clear();
+              navigate("/");
+            }}
+          >
+            Sign Out
+          </button>
+          <NavLink to="/change-password" className="btn btn-outline-primary">
+            Change Password
+          </NavLink>
+        </div>
+      </nav>
 
+      <div className="container mt-5">
+        <form
+          onSubmit={handleCreateProfile}
+          className="bg-white p-4 rounded shadow"
+        >
+          <h3 className="text-center mb-4">Create Profile</h3>
 
-  if (!existedUser?.userdetails?.userdetailsid) {
-    return (
-      <>
-        <nav className="navbar navbar-expand-lg navbar-light bg-light px-5 py-3">
-          <h1 className="navbar-brand">This Is Profile Section</h1>
-          <div className="d-flex">
-            <button
-              className="btn btn-outline-dark me-2"
-              onClick={() => {
-                sessionStorage.clear();
-                navigate("/");
-              }}
-            >
-              Sign Out
-            </button>
-            <NavLink to="/change-password" className="btn btn-outline-primary">
-              Change Password
-            </NavLink>
+          <div className="mb-3">
+            <label htmlFor="firstname" className="form-label">
+              First Name:
+            </label>
+            <input
+              type="text"
+              className="form-control"
+              id="firstname"
+              name="firstname"
+              value={existedUser?.firstname?.toUpperCase() || ""}
+              onChange={handleAlreadyExistedDetails}
+            />
           </div>
-        </nav>
 
-        <div className="container mt-5">
-          <form onSubmit={handleCreateProfile} className="bg-white p-4 rounded shadow">
-            <div className="mb-3">
-              <label htmlFor="firstname" className="form-label">
-                First Name:
-              </label>
-              <input
-                type="text"
-                className="form-control"
-                id="firstname"
-                name="firstname"
-                value={existedUser?.firstname?.toUpperCase() || ""}
-                onChange={handleAlreadyExistedDetails}
-              />
-            </div>
+          <div className="mb-3">
+            <label htmlFor="lastname" className="form-label">
+              Last Name:
+            </label>
+            <input
+              type="text"
+              className="form-control"
+              id="lastname"
+              name="lastname"
+              value={existedUser?.lastname?.toUpperCase() || ""}
+              onChange={handleAlreadyExistedDetails}
+            />
+          </div>
 
-            <div className="mb-3">
-              <label htmlFor="lastname" className="form-label">
-                Last Name:
-              </label>
-              <input
-                type="text"
-                className="form-control"
-                id="lastname"
-                name="lastname"
-                value={existedUser?.lastname?.toUpperCase() || ""}
-                onChange={handleAlreadyExistedDetails}
-              />
-            </div>
+          <div className="mb-3">
+            <label htmlFor="email" className="form-label">
+              Email:
+            </label>
+            <input
+              type="email"
+              className="form-control"
+              id="email"
+              name="email"
+              value={existedUser?.email || ""}
+              onChange={handleAlreadyExistedDetails}
+            />
+          </div>
 
-            <div className="mb-3">
-              <label htmlFor="email" className="form-label">
-                Email:
-              </label>
-              <input
-                type="email"
-                className="form-control"
-                id="email"
-                name="email"
-                value={existedUser?.email || ""}
-                onChange={handleAlreadyExistedDetails}
-              />
-            </div>
+          <h4 className="text-center mt-4">Additional Details</h4>
 
-            {/* <div>
-            {Object.entries(existedUser.userdetails).map(([key, value]) => (
-              <div className="mb-3" key={key}>
-                <label htmlFor={key} className="form-label">
-                  {key.charAt(0).toUpperCase() + key.slice(1)}:
-                </label>
+          <div className="mb-3">
+            <label htmlFor="address" className="form-label">Address:</label>
+            <input
+              type="text"
+              className="form-control"
+              id="address"
+              name="address"
+              value={existedUser?.userdetails?.address || ""}
+              onChange={handleAlreadyExistedDetails}
+            />
+          </div>
+
+          <div className="mb-3">
+            <label htmlFor="city" className="form-label">City:</label>
+            <input
+              type="text"
+              className="form-control"
+              id="city"
+              name="city"
+              value={existedUser?.userdetails?.city || ""}
+              onChange={handleAlreadyExistedDetails}
+            />
+          </div>
+
+          <div className="mb-3">
+            <label htmlFor="state" className="form-label">State:</label>
+            <input
+              type="text"
+              className="form-control"
+              id="state"
+              name="state"
+              value={existedUser?.userdetails?.state || ""}
+              onChange={handleAlreadyExistedDetails}
+            />
+          </div>
+
+          <div className="mb-3">
+            <label htmlFor="pin" className="form-label">PIN Code:</label>
+            <input
+              type="text"
+              className="form-control"
+              id="pin"
+              name="pin"
+              value={existedUser?.userdetails?.pin || ""}
+              onChange={handleAlreadyExistedDetails}
+            />
+          </div>
+
+          <div className="mb-3">
+            <label htmlFor="adhaar" className="form-label">Aadhar Card Number:</label>
+            <input
+              type="text"
+              className="form-control"
+              id="adhaar"
+              name="adhaar"
+              value={existedUser?.userdetails?.adhaar || ""}
+              onChange={handleAlreadyExistedDetails}
+            />
+          </div>
+
+          <div className="mb-3">
+            <label htmlFor="pan" className="form-label">PAN Card Number:</label>
+            <input
+              type="text"
+              className="form-control"
+              id="pan"
+              name="pan"
+              value={existedUser?.userdetails?.pan?.toUpperCase() || ""}
+              onChange={handleAlreadyExistedDetails}
+            />
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label">Gender:</label>
+            <div>
+              <div className="form-check form-check-inline">
                 <input
-                  type={key === "dateOfBirth" ? "date" : "text"}
-                  className="form-control"
-                  id={key}
-                  name={key}
-                  value={value || ""}
+                  type="radio"
+                  className="form-check-input"
+                  id="genderMale"
+                  name="gender"
+                  value="M"
+                  checked={existedUser?.userdetails?.gender === "M"}
                   onChange={handleAlreadyExistedDetails}
                 />
+                <label htmlFor="genderMale" className="form-check-label">Male</label>
               </div>
-            ))} */}
 
-            <div className="d-flex justify-content-center mt-4">
-              <button type="submit" className="btn btn-primary px-4">
-                Create
-              </button>
+              <div className="form-check form-check-inline">
+                <input
+                  type="radio"
+                  className="form-check-input"
+                  id="genderFemale"
+                  name="gender"
+                  value="F"
+                  checked={existedUser?.userdetails?.gender === "F"}
+                  onChange={handleAlreadyExistedDetails}
+                />
+                <label htmlFor="genderFemale" className="form-check-label">Female</label>
+              </div>
+
+              <div className="form-check form-check-inline">
+                <input
+                  type="radio"
+                  className="form-check-input"
+                  id="genderOther"
+                  name="gender"
+                  value="O"
+                  checked={existedUser?.userdetails?.gender === "O"}
+                  onChange={handleAlreadyExistedDetails}
+                />
+                <label htmlFor="genderOther" className="form-check-label">Other</label>
+              </div>
             </div>
-          </form>
-        </div>
-      </>
-    );
-  }
+          </div>
 
-  return null;
+          <div className="mb-3">
+            <label htmlFor="mobile" className="form-label">Mobile Number:</label>
+            <input
+              type="tel"
+              className="form-control"
+              id="mobile"
+              name="mobile"
+              value={existedUser?.userdetails?.mobile || ""}
+              onChange={handleAlreadyExistedDetails}
+            />
+          </div>
+
+          <div className="mb-3">
+            <label htmlFor="dateOfBirth" className="form-label">Date of Birth:</label>
+            <input
+              type="date"
+              className="form-control"
+              id="dateOfBirth"
+              name="dateOfBirth"
+              value={existedUser?.userdetails?.dateOfBirth || ""}
+              onChange={handleAlreadyExistedDetails}
+            />
+          </div>
+
+          <div className="text-center">
+            <button type="submit" className="btn btn-primary">Create Profile</button>
+          </div>
+        </form>
+      </div>
+    </>
+  );
+}
+
+return (
+  <div className="alert alert-danger text-center mt-4" role="alert">
+    <h4 className="alert-heading">Profile Already Exists</h4>
+    <p>Please check your details </p>
+  </div>
+);
 };
 
 export default Profile;
